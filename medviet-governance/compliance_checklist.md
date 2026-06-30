@@ -17,7 +17,7 @@
 
 ## D. DPO Appointment
 - [ ] Đã bổ nhiệm Data Protection Officer
-- [ ] DPO có thể liên hệ tại: ___
+- [ ] DPO có thể liên hệ tại: dpo@medviet.com
 
 ## E. Technical Controls (mapping từ requirements)
 | NĐ13 Requirement | Technical Control | Status | Owner |
@@ -28,5 +28,24 @@
 | Audit logging | CloudTrail + API access logs | ⬜ Todo | Platform Team |
 | Breach detection | Anomaly monitoring (Prometheus) | ⬜ Todo | Security Team |
 
-## F. TODO: Điền vào phần còn thiếu
-Với mỗi row còn "⬜ Todo", mô tả technical solution cụ thể bạn sẽ implement.
+## F. Technical Solutions for Todo Items
+
+### Audit Logging
+- **Solution:** Implement FastAPI middleware để log tất cả API requests vào Elasticsearch hoặc AWS CloudWatch. Mỗi log entry bao gồm: timestamp, user ID, action, resource, IP address, HTTP method, response status code. Sử dụng cấu trúc JSON structured logging và ELK stack để visualize.
+- **Cụ thể:**
+  - Tạo middleware FastAPI ghi log vào file/DB
+  - Tích hợp AWS CloudTrail cho infrastructure-level logging
+  - Thiết lập log retention policy tối thiểu 12 tháng theo NĐ13
+  - Dùng Grafana Loki hoặc ELK để search và visualize logs
+
+### Breach Detection
+- **Solution:** Thiết lập Prometheus + Alertmanager để monitoring real-time. Các alert rules bao gồm:
+  1. **Phát hiện access bất thường:** > 10 failed login attempts trong 5 phút từ cùng 1 IP -> alert
+  2. **Phát hiện data exfiltration:** > 1000 records được query trong 1 phút -> alert
+  3. **Phát hiện PII leak:** Sử dụng Presidio scan trên response body để detect PII -> alert
+- **Cụ thể:**
+  - Cài đặt Prometheus metrics exporter trong FastAPI
+  - Cấu hình các alert rules trong Prometheus
+  - Tích hợp với PagerDuty/Email/Slack để notify security team
+  - Xây dựng incident response runbook cho từng loại breach
+  - Test incident response định kỳ (quarterly tabletop exercises)
